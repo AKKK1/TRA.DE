@@ -1,0 +1,355 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { useRouter } from "next/navigation";
+import Header from "@/components/Header";
+import ListingCard, {
+  ListingsTabs,
+  type ListingTab,
+} from "@/components/ListingCard";
+import AddListingModal from "@/components/AddListingModal";
+import OfferModal from "@/components/OfferModal";
+import Toast from "@/components/Toast";
+import { Trash2, MapPin } from "lucide-react";
+import Footer from "@/app/footer/page";
+import HeroSection from "@/components/newDesign/HeroSection";
+import CategoriesSection from "@/components/newDesign/CategoriesSection";
+
+const C = {
+  green: "#1a8a4a",
+  greenLight: "#e6f5ec",
+  border: "#e8ebe8",
+  text: "#111111",
+  text3: "#999999",
+};
+
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+  Berlin: { lat: 52.52, lng: 13.405 },
+  Hamburg: { lat: 53.5511, lng: 9.9937 },
+  Munich: { lat: 48.1351, lng: 11.582 },
+  Cologne: { lat: 50.9375, lng: 6.9603 },
+  Frankfurt: { lat: 50.1109, lng: 8.6821 },
+  Stuttgart: { lat: 48.7758, lng: 9.1829 },
+  Dusseldorf: { lat: 51.2277, lng: 6.7735 },
+  Leipzig: { lat: 51.3397, lng: 12.3731 },
+  Dortmund: { lat: 51.5136, lng: 7.4653 },
+  Essen: { lat: 51.4556, lng: 7.0116 },
+};
+
+function distKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function nearbyCities(
+  userLat: number,
+  userLng: number,
+  radius = 100,
+): string[] {
+  return Object.entries(CITY_COORDS)
+    .filter(([, c]) => distKm(userLat, userLng, c.lat, c.lng) <= radius)
+    .map(([name]) => name);
+}
+
+export default function HomePage() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const [listings, setListings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<ListingTab>("new");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState<any>(null);
+  const [editingListing, setEditingListing] = useState<any>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [geoStatus, setGeoStatus] = useState<
+    "idle" | "loading" | "done" | "denied"
+  >("idle");
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    listingId: string | null;
+  }>({ isOpen: false, listingId: null });
+
+  const fetchListings = async (params?: URLSearchParams) => {
+    setLoading(true);
+    const res = await fetch(
+      `/api/listings${params?.toString() ? "?" + params.toString() : ""}`,
+    );
+    const data = await res.json();
+    setListings(Array.isArray(data) ? data : []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
+  const handleTabChange = (tab: ListingTab) => {
+    setActiveTab(tab);
+    if (tab === "exclusive") {
+      const p = new URLSearchParams();
+      p.set("listingType", "EXCLUSIVE");
+      fetchListings(p);
+    } else if (tab === "vip") {
+      const p = new URLSearchParams();
+      p.set("listingType", "VIP");
+      fetchListings(p);
+    } else if (tab === "new") {
+      fetchListings();
+    } else if (tab === "popular") {
+      const p = new URLSearchParams();
+      p.set("sort", "popular");
+      fetchListings(p);
+    } else if (tab === "nearby") {
+      if (!navigator.geolocation) {
+        setToast("Geolocation is not supported in this browser");
+        fetchListings();
+        return;
+      }
+      setGeoStatus("loading");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          const cities = nearbyCities(latitude, longitude, 100);
+          setGeoStatus("done");
+          if (cities.length === 0) {
+            setToast("No nearby city found");
+            fetchListings();
+            return;
+          }
+          const p = new URLSearchParams();
+          cities.forEach((c) => p.append("city", c));
+          fetchListings(p);
+          setToast(`Details`);
+        },
+        () => {
+          setGeoStatus("denied");
+          setToast("Location access was denied");
+          fetchListings();
+        },
+        { timeout: 8000, maximumAge: 300000 },
+      );
+    }
+  };
+
+  const confirmDeleteListing = async () => {
+    if (!deleteConfirmation.listingId) return;
+    const res = await fetch(`/api/listings/${deleteConfirmation.listingId}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      setDeleteConfirmation({ isOpen: false, listingId: null });
+      fetchListings();
+    }
+  };
+
+  const requireAuth = (action: () => void) => {
+    if (!user) {
+      setToast("Please log in to continue.");
+      return;
+    }
+    action();
+  };
+
+  // details details → /search details details
+  const handleHeroSearch = (query: string, type: string, filters?: any) => {
+    const p = new URLSearchParams();
+    if (query?.trim()) {
+      p.append("q", query.trim());
+      p.append("type", type || "want");
+    }
+    if (filters?.city) p.append("city", filters.city);
+    if (filters?.category) p.append("category", filters.category);
+    if (filters?.condition) p.append("condition", filters.condition);
+    router.push(`/search?${p.toString()}`);
+  };
+
+  const displayListings =
+    activeTab === "exclusive"
+      ? listings.filter((l) => l.listingType === "EXCLUSIVE")
+      : activeTab === "vip"
+      ? listings.filter((l) => l.listingType === "VIP" || l.isVIP)
+      : listings
+          .filter((l) => l.listingType !== "VIP" && l.listingType !== "EXCLUSIVE" && !l.isVIP)
+          .sort((a, b) => {
+            if (a.listingType === "SILVER" && b.listingType !== "SILVER")
+              return -1;
+            if (a.listingType !== "SILVER" && b.listingType === "SILVER")
+              return 1;
+            return 0;
+          });
+
+  return (
+    <div className="min-h-screen" style={{ background: "#fff", color: C.text }}>
+      <Header
+        onAddListing={() => requireAuth(() => setShowAddModal(true))}
+        // details details → /search details (details details)
+        onSearch={(query, type, filters) => {
+          const p = new URLSearchParams();
+          if (query?.trim()) {
+            p.append("q", query.trim());
+            p.append("type", type || "want");
+          }
+          if (filters?.city) p.append("city", filters.city);
+          if (filters?.category) p.append("category", filters.category);
+          if (filters?.condition) p.append("condition", filters.condition);
+          router.push(`/search?${p.toString()}`);
+        }}
+      />
+
+      {/* ── details + details — details details scroll, details fixed ── */}
+      <HeroSection onSearch={handleHeroSearch} />
+      <CategoriesSection />
+
+      {/* ── details ── */}
+      <main id="listings-section" className="max-w-7xl mx-auto px-4 py-8">
+        <ListingsTabs
+          activeTab={activeTab}
+          onChange={handleTabChange}
+          hasExclusiveListings={listings.some((l) => l.listingType === "EXCLUSIVE")}
+        />
+
+        {activeTab === "nearby" && geoStatus === "loading" && (
+          <div
+            className="flex items-center gap-2 mb-4 text-sm"
+            style={{ color: C.text3 }}
+          >
+            <MapPin size={14} style={{ color: C.green }} />
+            <span>Finding your location...</span>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+            {[...Array(10)].map((_, i) => (
+              <div
+                key={i}
+                className="rounded-xl overflow-hidden animate-pulse"
+                style={{
+                  border: `1px solid ${C.border}`,
+                  background: "#f8faf8",
+                }}
+              >
+                <div className="aspect-[4/3] w-full bg-gray-200" />
+                <div className="p-3 space-y-2.5">
+                  <div className="h-3.5 bg-gray-200 rounded w-3/4" />
+                  <div className="h-3 bg-gray-200 rounded w-1/3" />
+                  <div className="h-10 bg-gray-200 rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : displayListings.length === 0 ? (
+          <div className="text-center py-20" style={{ color: C.text3 }}>
+            <p className="text-base font-medium">
+              {activeTab === "nearby" && geoStatus === "done"
+                ? "No nearby listings found"
+                : "No listings yet"}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+            {displayListings.map((listing, index) => (
+              <ListingCard
+                key={listing._id}
+                listing={listing}
+                user={user}
+                index={index}
+                onOffer={() => requireAuth(() => setShowOfferModal(listing))}
+                onEdit={() => {
+                  setEditingListing(listing);
+                  setShowAddModal(true);
+                }}
+                onDelete={() =>
+                  setDeleteConfirmation({
+                    isOpen: true,
+                    listingId: listing._id,
+                  })
+                }
+              />
+            ))}
+          </div>
+        )}
+      </main>
+
+      {showAddModal && (
+        <AddListingModal
+          onClose={() => {
+            setShowAddModal(false);
+            setEditingListing(null);
+          }}
+          onRefresh={() => fetchListings()}
+          editingListing={editingListing}
+        />
+      )}
+      {showOfferModal && (
+        <OfferModal
+          listing={showOfferModal}
+          onClose={() => setShowOfferModal(null)}
+        />
+      )}
+
+      {deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() =>
+              setDeleteConfirmation({ isOpen: false, listingId: null })
+            }
+          />
+          <div
+            className="relative w-full max-w-sm rounded-2xl p-6 shadow-xl text-center"
+            style={{ background: "#fff", border: `1px solid ${C.border}` }}
+          >
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500"
+              style={{ background: "rgba(239,68,68,0.08)" }}
+            >
+              <Trash2 size={28} />
+            </div>
+            <h3 className="text-base font-bold mb-2" style={{ color: C.text }}>
+              Delete this listing?
+            </h3>
+            <p className="text-xs mb-6" style={{ color: C.text3 }}>
+              This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() =>
+                  setDeleteConfirmation({ isOpen: false, listingId: null })
+                }
+                className="flex-1 py-3 rounded-xl text-xs font-medium"
+                style={{
+                  border: `1px solid ${C.border}`,
+                  color: C.text3,
+                  background: "transparent",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteListing}
+                className="flex-1 py-3 rounded-xl text-white text-xs font-semibold"
+                style={{ background: "#ef4444", cursor: "pointer" }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+      <Footer />
+    </div>
+  );
+}

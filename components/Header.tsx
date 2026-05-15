@@ -1,0 +1,1368 @@
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Search,
+  Bell,
+  Plus,
+  LogOut,
+  Menu,
+  X,
+  Filter,
+  User,
+  Route,
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { CATEGORIES, useAuth, GEORGIAN_CITIES, cn } from "./AuthProvider";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { FaTelegram, FaWhatsapp } from "react-icons/fa";
+// ── details TextorText (E details) ─────────────────────────────────────────
+const C = {
+  green: "#1a8a4a",
+  greenDark: "#125e33",
+  greenLight: "#e6f5ec",
+  bg: "#ffffff",
+  bgCard: "#f8faf8",
+  border: "#e8ebe8",
+  text: "#111111",
+  text2: "#555555",
+  text3: "#999999",
+};
+export default function Header({
+  onAddListing,
+  onSearch,
+}: {
+  onAddListing: () => void;
+  onSearch?: (query: string, type: string, filters?: any) => void;
+}) {
+  const { user, logout } = useAuth();
+  const pathname = usePathname();
+
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [searchType, setSearchType] = useState<"want" | "give">("want");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [settings, setSettings] = useState<any>(null);
+  const [showAuthModal, setShowAuthModal] = useState<
+    "login" | "register" | null
+  >(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    city: "",
+    category: "",
+    condition: "",
+  });
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then(setSettings)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetch("/api/notifications")
+        .then((r) => r.json())
+        .then(setNotifications)
+        .catch(() => {});
+    }
+  }, [user]);
+
+  const router = useRouter();
+
+  // pathname "/" - details details state-details details details (onSearch details details details)
+  useEffect(() => {
+    if (pathname === "/") {
+      setSearchQuery("");
+      setFilters({ city: "", category: "", condition: "" });
+      setSearchType("want");
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = showMobileMenu ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showMobileMenu]);
+
+  const handleSearch = useCallback(() => {
+    if (onSearch) onSearch(searchQuery, searchType, filters);
+    setShowFilters(false);
+  }, [onSearch, searchQuery, searchType, filters]);
+
+  const handleLogout = async () => {
+    await logout();
+    setShowMobileMenu(false);
+  };
+
+  const openOffers = async () => {
+    setShowNotifications(false);
+    if (unreadCount > 0) {
+      await fetch("/api/notifications/read", { method: "POST" });
+      setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
+    }
+    router.push("/profile?tab=offers");
+  };
+
+  const handleOfferAction = async (id: string, status: string) => {
+    await fetch(`/api/offers/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    fetch("/api/notifications")
+      .then((r) => r.json())
+      .then(setNotifications);
+  };
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  // ── details / details toggle ──────────────────────────────────────────────────
+  const SearchToggle = ({ small = false }: { small?: boolean }) => (
+    <div
+      className={cn(
+        "flex items-center gap-0.5 shrink-0",
+        small ? "pr-1.5 mr-1" : "pr-2 mr-1",
+      )}
+      style={{ borderRight: `1px solid ${C.border}` }}
+    >
+      {(["want", "give"] as const).map((t) => (
+        <button
+          key={t}
+          type="button"
+          onClick={() => setSearchType(t)}
+          className={cn(
+            "rounded-lg font-bold uppercase tracking-widest transition-all whitespace-nowrap text-[10px]",
+            small ? "px-2 py-1" : "px-2.5 py-1.5",
+          )}
+          style={
+            searchType === t
+              ? { background: C.green, color: "#fff" }
+              : { color: C.text3 }
+          }
+        >
+          {t === "want" ? "Find" : "Have"}
+        </button>
+      ))}
+    </div>
+  );
+
+  return (
+    <>
+      {/* ══ HEADER ══ */}
+      <header
+        className="sticky top-0 z-50"
+        style={{
+          background: C.bg,
+          borderBottom: `1px solid ${C.border}`,
+          fontFamily: "'Space Grotesk', sans-serif",
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 h-[60px] flex items-center justify-between gap-4 lg:gap-8">
+          {/* ── details ── */}
+          <div className="flex items-center shrink-0">
+            <Link
+              href="/"
+              onClick={() => {
+                router.push("/");
+                setSearchQuery("");
+                setFilters({ city: "", category: "", condition: "" });
+                setSearchType("want");
+              }}
+              className="text-[17px] font-bold tracking-tight"
+              style={{ color: C.text, textDecoration: "none" }}
+            >
+              {settings?.logos ? (
+                <img
+                  src={settings.logo}
+                  alt={settings.siteName}
+                  className="h-7 object-contain"
+                />
+              ) : (
+                <>
+                  TRA<span style={{ color: C.green }}>.DE</span>
+                </>
+              )}
+            </Link>
+          </div>
+
+          {/* ── details — desktop ── */}
+          <div
+            className="flex-1 max-w-xl hidden lg:flex items-center rounded-xl p-1 relative"
+            style={{ background: C.bgCard, border: `1px solid ${C.border}` }}
+          >
+            <SearchToggle />
+            <input
+              type="text"
+              placeholder={
+                searchType === "want"
+                  ? "What are you looking for?"
+                  : "What do you have?"
+              }
+              className="flex-1 bg-transparent px-3 text-sm outline-none min-w-0"
+              style={{
+                color: C.text,
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="p-2 shrink-0 transition-colors rounded-lg"
+              style={{ color: showFilters ? C.green : C.text3 }}
+            >
+              <Filter size={17} />
+            </button>
+            <button
+              onClick={handleSearch}
+              className="p-2 shrink-0 transition-colors rounded-lg"
+              style={{ color: C.text3 }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLElement).style.color = C.green)
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLElement).style.color = C.text3)
+              }
+            >
+              <Search size={17} />
+            </button>
+
+            {/* Filters dropdown */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-full right-0 mt-2 w-full rounded-2xl shadow-xl p-4 z-[60]"
+                  style={{ background: C.bg, border: `1px solid ${C.border}` }}
+                >
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      {
+                        label: "City",
+                        key: "city",
+                        opts: GEORGIAN_CITIES.map((c) => ({ v: c, l: c })),
+                      },
+                      {
+                        label: "Category",
+                        key: "category",
+                        opts: CATEGORIES.map((c) => ({ v: c.id, l: c.name })),
+                      },
+                      {
+                        label: "Condition",
+                        key: "condition",
+                        opts: [
+                          { v: "NEW", l: "New" },
+                          { v: "USED", l: "Used" },
+                        ],
+                      },
+                    ].map((f) => (
+                      <div key={f.key} className="space-y-1.5">
+                        <label
+                          className="text-[10px] font-bold uppercase tracking-widest"
+                          style={{ color: C.text3 }}
+                        >
+                          {f.label}
+                        </label>
+                        <select
+                          value={(filters as any)[f.key]}
+                          onChange={(e) =>
+                            setFilters({ ...filters, [f.key]: e.target.value })
+                          }
+                          className="w-full rounded-lg px-3 py-2 text-xs outline-none"
+                          style={{
+                            background: C.bgCard,
+                            border: `1px solid ${C.border}`,
+                            color: C.text,
+                            fontFamily: "'Space Grotesk', sans-serif",
+                          }}
+                        >
+                          <option value="">All</option>
+                          {f.opts.map((o) => (
+                            <option key={o.v} value={o.v}>
+                              {o.l}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={handleSearch}
+                    className="w-full mt-4 text-white font-bold uppercase tracking-widest text-xs py-2 rounded-lg transition-colors"
+                    style={{ background: C.green }}
+                    onMouseEnter={(e) =>
+                      ((e.currentTarget as HTMLElement).style.background =
+                        C.greenDark)
+                    }
+                    onMouseLeave={(e) =>
+                      ((e.currentTarget as HTMLElement).style.background =
+                        C.green)
+                    }
+                  >
+                    Search
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* ── Actions — desktop ── */}
+          <div className="hidden lg:flex items-center gap-2.5 shrink-0">
+            {user ? (
+              <>
+                {/* Bell */}
+                <div className="relative">
+                  <button
+                    onClick={openOffers}
+                    className="relative p-2.5 rounded-xl transition-colors"
+                    style={{
+                      border: `1px solid ${C.border}`,
+                      background: C.bgCard,
+                      color: C.text2,
+                    }}
+                  >
+                    <Bell size={19} />
+                    {unreadCount > 0 && (
+                      <span
+                        className="absolute top-1.5 right-1.5 w-4 h-4 text-[10px] font-bold flex items-center justify-center rounded-full text-white"
+                        style={{ background: C.green }}
+                      >
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+                  <AnimatePresence>
+                    {showNotifications && (
+                      <NotificationDropdown
+                        notifications={notifications}
+                        onAction={handleOfferAction}
+                        onClose={() => setShowNotifications(false)}
+                      />
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* + TextorText */}
+                <button
+                  onClick={onAddListing}
+                  className="text-white px-5 py-2 rounded-lg text-[13px] font-semibold transition-all flex items-center gap-1.5"
+                  style={{ background: C.green }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background =
+                      C.greenDark)
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background =
+                      C.green)
+                  }
+                >
+                  <Plus size={14} />
+                  Add listing
+                </button>
+
+                {/* Avatar */}
+                <Link
+                  href="/profile"
+                  className="flex items-center p-1 rounded-xl transition-all"
+                  style={{
+                    border: `1px solid ${C.border}`,
+                    background: C.bgCard,
+                  }}
+                >
+                  <img
+                    src={user.avatar || "https://www.gravatar.com/avatar?d=mp"}
+                    className="w-8 h-8 rounded-lg object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </Link>
+
+                {/* Logout */}
+                <button
+                  onClick={handleLogout}
+                  className="p-2.5 rounded-xl transition-colors"
+                  style={{
+                    border: `1px solid ${C.border}`,
+                    background: C.bgCard,
+                    color: C.text3,
+                  }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.color = "#ef4444")
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLElement).style.color = C.text3)
+                  }
+                >
+                  <LogOut size={17} />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setShowAuthModal("login")}
+                  className="rounded-lg px-4 py-2 text-[13px] font-medium transition-colors"
+                  style={{
+                    border: `1px solid ${C.border}`,
+                    color: C.text2,
+                    background: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor =
+                      C.text2;
+                    (e.currentTarget as HTMLElement).style.color = C.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor =
+                      C.border;
+                    (e.currentTarget as HTMLElement).style.color = C.text2;
+                  }}
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => setShowAuthModal("register")}
+                  className="text-white px-5 py-2 rounded-lg text-[13px] font-semibold transition-all"
+                  style={{ background: C.green }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background =
+                      C.greenDark)
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background =
+                      C.green)
+                  }
+                >
+                  Register
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* ── details: + Bell Burger ── */}
+          <div className="flex lg:hidden items-center gap-2 shrink-0">
+            <button
+              onClick={onAddListing}
+              className="p-2.5 rounded-xl text-white transition-all"
+              style={{ background: C.green }}
+            >
+              <Plus size={19} />
+            </button>
+            {user && (
+              <button
+                onClick={openOffers}
+                className="relative p-2.5 rounded-xl transition-colors"
+                style={{
+                  border: `1px solid ${C.border}`,
+                  background: C.bgCard,
+                  color: C.text2,
+                }}
+              >
+                <Bell size={19} />
+                {unreadCount > 0 && (
+                  <span
+                    className="absolute top-1.5 right-1.5 w-4 h-4 text-[10px] font-bold flex items-center justify-center rounded-full text-white"
+                    style={{ background: C.green }}
+                  >
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+            )}
+            <button
+              onClick={() => setShowMobileMenu(true)}
+              className="p-2.5 rounded-xl transition-colors"
+              style={{
+                border: `1px solid ${C.border}`,
+                background: C.bgCard,
+                color: C.text2,
+              }}
+            >
+              <Menu size={19} />
+            </button>
+          </div>
+        </div>
+
+        {/* ── details details ── */}
+        <div className="lg:hidden px-4 pb-3">
+          <div
+            className="flex items-center rounded-xl p-1"
+            style={{ background: C.bgCard, border: `1px solid ${C.border}` }}
+          >
+            <SearchToggle small />
+            <input
+              type="text"
+              placeholder={
+                searchType === "want" ? "Search..." : "What do you have?"
+              }
+              className="flex-1 bg-transparent px-2 text-sm outline-none min-w-0"
+              style={{
+                color: C.text,
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+            <button
+              onClick={handleSearch}
+              className="p-2 shrink-0 transition-colors"
+              style={{ color: C.text3 }}
+            >
+              <Search size={16} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* ══ details Drawer ══ */}
+      <AnimatePresence>
+        {showMobileMenu && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileMenu(false)}
+              className="fixed inset-0 z-[70] lg:hidden"
+              style={{
+                background: "rgba(0,0,0,0.4)",
+                backdropFilter: "blur(4px)",
+              }}
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 250 }}
+              className="fixed top-0 right-0 h-full w-[80vw] max-w-xs z-[80] flex flex-col lg:hidden"
+              style={{ background: C.bg, borderLeft: `1px solid ${C.border}` }}
+            >
+              {/* Drawer header */}
+              <div
+                className="flex items-center justify-between px-5 py-4 shrink-0"
+                style={{ borderBottom: `1px solid ${C.border}` }}
+              >
+                <span
+                  className="text-[16px] font-bold"
+                  style={{ color: C.text }}
+                >
+                  GAMITS<span style={{ color: C.green }}>VALE</span>.GE
+                </span>
+                <button
+                  onClick={() => setShowMobileMenu(false)}
+                  className="p-2 rounded-xl transition-colors"
+                  style={{ color: C.text3 }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Drawer content */}
+              <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                {user && (
+                  <div
+                    className="flex items-center gap-3 px-3 py-3 mb-3 rounded-xl"
+                    style={{
+                      background: C.bgCard,
+                      border: `1px solid ${C.border}`,
+                    }}
+                  >
+                    <img
+                      src={
+                        user.avatar || "https://www.gravatar.com/avatar?d=mp"
+                      }
+                      className="w-10 h-10 rounded-xl object-cover"
+                      style={{ border: `1px solid ${C.border}` }}
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="min-w-0">
+                      <p
+                        className="text-sm font-bold truncate"
+                        style={{ color: C.text }}
+                      >
+                        {user.name}
+                      </p>
+                      <p
+                        className="text-[11px] truncate"
+                        style={{ color: C.text3 }}
+                      >
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {[
+                  { href: "/", label: "🏠 Home" },
+                  { href: "/rules", label: "📋 Rules" },
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setShowMobileMenu(false)}
+                    className="flex items-center px-3 py-3 rounded-xl text-sm font-medium transition-all"
+                    style={{ color: C.text2, textDecoration: "none" }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background =
+                        C.greenLight;
+                      (e.currentTarget as HTMLElement).style.color = C.green;
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background =
+                        "transparent";
+                      (e.currentTarget as HTMLElement).style.color = C.text2;
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Drawer footer */}
+              <div
+                className="px-3 py-4 space-y-2 shrink-0"
+                style={{ borderTop: `1px solid ${C.border}` }}
+              >
+                {user ? (
+                  <>
+                    <Link
+                      href="/profile"
+                      onClick={() => setShowMobileMenu(false)}
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-medium transition-all"
+                      style={{
+                        border: `1px solid ${C.border}`,
+                        color: C.text2,
+                        textDecoration: "none",
+                      }}
+                    >
+                      <User size={16} /> Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-medium text-red-500 transition-all"
+                      style={{ background: "rgba(239,68,68,0.08)" }}
+                    >
+                      <LogOut size={16} /> Log out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setShowAuthModal("login");
+                        setShowMobileMenu(false);
+                      }}
+                      className="w-full py-3 rounded-xl text-sm font-medium transition-all"
+                      style={{
+                        border: `1px solid ${C.border}`,
+                        color: C.text2,
+                      }}
+                    >
+                      Login
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowAuthModal("register");
+                        setShowMobileMenu(false);
+                      }}
+                      className="w-full py-3 rounded-xl text-white text-sm font-semibold transition-all"
+                      style={{ background: C.green }}
+                    >
+                      Register
+                    </button>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Notifications details */}
+      <AnimatePresence>
+        {showNotifications && (
+          <div className="fixed inset-0 z-[70] flex items-start justify-end p-4 pt-20 lg:hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowNotifications(false)}
+              className="absolute inset-0"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="relative w-full max-w-sm"
+            >
+              <NotificationDropdown
+                notifications={notifications}
+                onAction={handleOfferAction}
+                onClose={() => setShowNotifications(false)}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAuthModal && (
+          <AuthModal
+            type={showAuthModal}
+            onClose={() => setShowAuthModal(null)}
+          />
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+// ── NotificationDropdown ─────────────────────────────────────────────────────
+function NotificationDropdown({
+  notifications,
+  onAction,
+  onClose,
+}: {
+  notifications: any[];
+  onAction: (id: string, status: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+      className="absolute top-full right-0 mt-3 w-96 rounded-2xl shadow-xl p-5 z-[60]"
+      style={{ background: C.bg, border: `1px solid ${C.border}` }}
+    >
+      <div className="flex items-center justify-between mb-5">
+        <h4
+          className="text-[11px] font-bold uppercase tracking-widest"
+          style={{ color: C.text3 }}
+        >
+          Notifications
+        </h4>
+        <span
+          className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+          style={{ background: C.greenLight, color: C.green }}
+        >
+          New
+        </span>
+      </div>
+      <div className="space-y-3 max-h-96 overflow-y-auto">
+        {notifications.length === 0 && (
+          <p className="text-xs text-center py-4" style={{ color: C.text3 }}>
+            No notifications
+          </p>
+        )}
+        {notifications.map((n) => (
+          <div
+            key={n._id}
+            className="p-4 rounded-xl transition-all"
+            style={{ background: C.bgCard, border: `1px solid ${C.border}` }}
+          >
+            <div className="flex gap-3">
+              <img
+                src={
+                  n.offer?.sender?.avatar ||
+                  "https://www.gravatar.com/avatar?d=mp"
+                }
+                className="w-9 h-9 rounded-full"
+                style={{ border: `1px solid ${C.border}` }}
+              />
+              <div className="flex-1">
+                <p className="text-xs font-bold mb-1" style={{ color: C.text }}>
+                  {n.offer?.sender?.name || "User"}
+                </p>
+                <p
+                  className="text-[11px] line-clamp-2 leading-relaxed mb-3"
+                  style={{ color: C.text2 }}
+                >
+                  {n.type === "NEW_OFFER"
+                    ? `Offered: ${n.offer?.description}`
+                    : "Your offer was updated"}
+                </p>
+                {n.type === "NEW_OFFER" && n.offer?.status === "PENDING" && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => onAction(n.offer._id, "ACCEPTED")}
+                      className="flex-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all text-white"
+                      style={{ background: "#16a34a" }}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => onAction(n.offer._id, "THINKING")}
+                      className="flex-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all"
+                      style={{
+                        background: C.bgCard,
+                        border: `1px solid ${C.border}`,
+                        color: C.text2,
+                      }}
+                    >
+                      Think
+                    </button>
+                    <button
+                      onClick={() => onAction(n.offer._id, "DECLINED")}
+                      className="flex-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all text-red-500"
+                      style={{ background: "rgba(239,68,68,0.08)" }}
+                    >
+                      Decline
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Link
+        href="/profile?tab=offers"
+        onClick={onClose}
+        className="block w-full mt-5 py-2.5 text-[11px] font-semibold text-center transition-colors"
+        style={{
+          borderTop: `1px solid ${C.border}`,
+          color: C.green,
+          textDecoration: "none",
+        }}
+      >
+        View all →
+      </Link>
+    </motion.div>
+  );
+}
+
+// ── AuthModal ─────────────────────────────────────────────────────────────────
+function AuthModal({
+  type,
+  onClose,
+}: {
+  type: "login" | "register";
+  onClose: () => void;
+}) {
+  const { login, register, verify, loginWithGoogle } = useAuth();
+  const [step, setStep] = useState<"form" | "verify" | "forgot" | "reset">(
+    "form",
+  );
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    name: "",
+    lastName: "",
+    phone: "",
+    instagram: "",
+    facebook: "",
+    code: "",
+    whatsapp: "",
+    telegram: "",
+    newPassword: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const inp = cn(
+    "w-full px-4 py-3 rounded-xl outline-none text-sm transition-colors",
+  );
+  const inpStyle = {
+    background: C.bgCard,
+    border: `1px solid ${C.border}`,
+    color: C.text,
+    fontFamily: "'Space Grotesk', sans-serif",
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      if (type === "login") {
+        if (step === "forgot") {
+          const res = await fetch("/api/auth/forgot-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: formData.email }),
+          });
+          if (res.ok) setStep("reset");
+          else {
+            const d = await res.json();
+            setError(d.error || "Could not send the code");
+          }
+        } else if (step === "reset") {
+          const res = await fetch("/api/auth/reset-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: formData.email,
+              code: formData.code,
+              newPassword: formData.newPassword,
+            }),
+          });
+          if (res.ok) {
+            onClose();
+            window.location.href = "/";
+          } else {
+            const d = await res.json();
+            setError(d.error || "Could not change password");
+          }
+        } else {
+          const res = await login(formData.email, formData.password);
+          if (res.success) onClose();
+          else setError(res.error || "Login failed");
+        }
+      } else {
+        if (step === "form") {
+          if (
+            !formData.phone.trim() &&
+            !formData.whatsapp.trim() &&
+            !formData.telegram.trim()
+          ) {
+            setError("Add phone, WhatsApp, or Telegram.");
+            return;
+          }
+          const res = await register(
+            formData.email,
+            formData.name,
+            formData.password,
+            {
+              lastName: formData.lastName,
+              phone: formData.phone,
+              facebook: formData.facebook,
+              whatsapp: formData.whatsapp,
+              telegram: formData.telegram,
+            },
+          );
+          if (res.success) setStep("verify");
+          else setError(res.error || "Registration failed");
+        } else {
+          const res = await verify(formData.email, formData.code);
+          if (res.success) onClose();
+          else setError(res.error || "Verification failed");
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFacebookLogin = () => {
+    window.location.href = "/api/auth/facebook";
+  };
+
+  const labelCls = "text-[10px] font-bold uppercase tracking-widest ml-1";
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0"
+        style={{ backdropFilter: "blur(4px)", background: "rgba(0,0,0,0.3)" }}
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="relative w-full max-w-md rounded-2xl shadow-2xl z-10 max-h-[90vh] overflow-y-auto"
+        style={{ background: C.bg, border: `1px solid ${C.border}` }}
+      >
+        <div className="p-8">
+          <button
+            onClick={onClose}
+            className="absolute top-5 right-5 p-2 rounded-full transition-colors"
+            style={{ color: C.text3 }}
+          >
+            <X size={22} />
+          </button>
+          <h2
+            className="text-2xl font-bold mb-6 text-center"
+            style={{ color: C.text, fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            {step === "forgot"
+              ? "Recover password"
+              : step === "reset"
+                ? "New password"
+                : step === "verify"
+                  ? "Verification"
+                  : type === "login"
+                    ? "Login"
+                    : "Register"}
+          </h2>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* ── REGISTER ── */}
+            {type === "register" && step === "form" && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className={labelCls} style={{ color: C.text3 }}>
+                      First name *
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="First name"
+                      className={inp}
+                      style={inpStyle}
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className={labelCls} style={{ color: C.text3 }}>
+                      Last name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Last name"
+                      className={inp}
+                      style={inpStyle}
+                      value={formData.lastName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, lastName: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className={labelCls} style={{ color: C.text3 }}>
+                    Email *
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    placeholder="email@gmail.com"
+                    className={inp}
+                    style={inpStyle}
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className={labelCls} style={{ color: C.text3 }}>
+                    Password *
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    minLength={6}
+                    placeholder="Minimum 6 characters"
+                    className={inp}
+                    style={inpStyle}
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="pt-2">
+                  <p
+                    className="text-[10px] font-bold uppercase tracking-widest mb-3"
+                    style={{ color: C.text3 }}
+                  >
+                    Add one contact method *
+                  </p>
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm">
+                        ☎
+                      </span>
+                      <input
+                        type="tel"
+                        placeholder="Phone +995 5XX XXX XXX"
+                        className={`${inp} pl-10`}
+                        style={inpStyle}
+                        value={formData.phone}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm">
+                        <FaWhatsapp color="#16a34a" />
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="Whatsapp +995 5XX XXX XXX"
+                        className={`${inp} pl-10`}
+                        style={inpStyle}
+                        value={formData.whatsapp}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            whatsapp: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm">
+                        <FaTelegram color="#229ED9" />
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="Telegram @username"
+                        className={`${inp} pl-10`}
+                        style={inpStyle}
+                        value={formData.telegram}
+                        onChange={(e) =>
+                          setFormData({ ...formData, telegram: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ── LOGIN ── */}
+            {type === "login" && (step === "form" || step === "forgot") && (
+              <>
+                <div className="space-y-1.5">
+                  <label className={labelCls} style={{ color: C.text3 }}>
+                    Email
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    placeholder="email@gmail.com"
+                    className={inp}
+                    style={inpStyle}
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                  />
+                </div>
+                {step === "form" && (
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center ml-1">
+                      <label className={labelCls} style={{ color: C.text3 }}>
+                        Password
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setStep("forgot")}
+                        className="text-[10px] font-bold transition-colors"
+                        style={{ color: C.green }}
+                      >
+                        Forgot?
+                      </button>
+                    </div>
+                    <input
+                      required
+                      type="password"
+                      minLength={6}
+                      className={inp}
+                      style={inpStyle}
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ── RESET ── */}
+            {step === "reset" && (
+              <>
+                <div className="space-y-1.5">
+                  <label className={labelCls} style={{ color: C.text3 }}>
+                    Recovery code
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    maxLength={6}
+                    className={`${inp} text-center text-2xl tracking-[10px]`}
+                    style={inpStyle}
+                    value={formData.code}
+                    onChange={(e) =>
+                      setFormData({ ...formData, code: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className={labelCls} style={{ color: C.text3 }}>
+                    New password
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    minLength={6}
+                    className={inp}
+                    style={inpStyle}
+                    value={formData.newPassword}
+                    onChange={(e) =>
+                      setFormData({ ...formData, newPassword: e.target.value })
+                    }
+                  />
+                </div>
+              </>
+            )}
+
+            {/* ── VERIFY ── */}
+            {step === "verify" && (
+              <div className="space-y-1.5">
+                <p
+                  className="text-sm text-center mb-4"
+                  style={{ color: C.text2 }}
+                >
+                  Code sent to{" "}
+                  <span className="font-bold" style={{ color: C.green }}>
+                    {formData.email}
+                  </span>
+                  
+                </p>
+                <label className={labelCls} style={{ color: C.text3 }}>
+                  6-digit code
+                </label>
+                <input
+                  required
+                  type="text"
+                  maxLength={6}
+                  placeholder="000000"
+                  className={`${inp} text-center text-2xl tracking-[10px]`}
+                  style={inpStyle}
+                  value={formData.code}
+                  onChange={(e) =>
+                    setFormData({ ...formData, code: e.target.value })
+                  }
+                />
+              </div>
+            )}
+
+            {error && (
+              <p
+                className="text-xs text-center font-semibold py-2 px-3 rounded-lg text-red-600"
+                style={{ background: "rgba(239,68,68,0.08)" }}
+              >
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full text-white py-3.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 mt-2"
+              style={{
+                background: C.green,
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+              onMouseEnter={(e) =>
+                !loading &&
+                ((e.currentTarget as HTMLElement).style.background =
+                  C.greenDark)
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLElement).style.background = C.green)
+              }
+            >
+              {loading
+                ? "Please wait..."
+                : step === "forgot"
+                  ? "Send code"
+                  : step === "reset"
+                    ? "Change password"
+                    : step === "verify"
+                      ? "Confirm"
+                      : type === "login"
+                        ? "Login"
+                        : "Register"}
+            </button>
+
+            {(step === "forgot" || step === "reset") && (
+              <button
+                type="button"
+                onClick={() => setStep("form")}
+                className="w-full text-[11px] font-semibold text-center mt-2 transition-colors"
+                style={{ color: C.text3 }}
+              >
+                ← Back
+              </button>
+            )}
+          </form>
+
+          {/* ── Social Login ── */}
+          {step === "form" && (
+            <>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div
+                    className="w-full"
+                    style={{ borderTop: `1px solid ${C.border}` }}
+                  />
+                </div>
+                <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest">
+                  <span
+                    className="px-4"
+                    style={{ background: C.bg, color: C.text3 }}
+                  >
+                    or
+                  </span>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    loginWithGoogle();
+                    onClose();
+                  }}
+                  className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-medium transition-all"
+                  style={{
+                    border: `1px solid ${C.border}`,
+                    color: C.text,
+                    background: C.bgCard,
+                  }}
+                >
+                  <img
+                    src="https://www.google.com/favicon.ico"
+                    className="w-4 h-4"
+                    alt="Google"
+                  />
+                  Continue with Google
+                </button>
+                {/* <button
+                  type="button"
+                  onClick={handleFacebookLogin}
+                  className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-medium transition-all text-[#1877F2]"
+                  style={{
+                    border: "1px solid rgba(24,119,242,0.2)",
+                    background: "rgba(24,119,242,0.05)",
+                  }}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="#1877F2"
+                  >
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                  Continue with Facebook
+                </button> */}
+              </div>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
