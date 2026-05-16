@@ -176,16 +176,21 @@ export default function HomePage() {
     activeTab === "exclusive"
       ? listings.filter((l) => l.listingType === "EXCLUSIVE")
       : activeTab === "vip"
-      ? listings.filter((l) => l.listingType === "VIP" || l.isVIP)
-      : listings
-          .filter((l) => l.listingType !== "VIP" && l.listingType !== "EXCLUSIVE" && !l.isVIP)
-          .sort((a, b) => {
-            if (a.listingType === "SILVER" && b.listingType !== "SILVER")
-              return -1;
-            if (a.listingType !== "SILVER" && b.listingType === "SILVER")
-              return 1;
-            return 0;
-          });
+        ? listings.filter((l) => l.listingType === "VIP" || l.isVIP)
+        : listings
+            .filter(
+              (l) =>
+                l.listingType !== "VIP" &&
+                l.listingType !== "EXCLUSIVE" &&
+                !l.isVIP,
+            )
+            .sort((a, b) => {
+              if (a.listingType === "SILVER" && b.listingType !== "SILVER")
+                return -1;
+              if (a.listingType !== "SILVER" && b.listingType === "SILVER")
+                return 1;
+              return 0;
+            });
 
   return (
     <div className="min-h-screen" style={{ background: "#fff", color: C.text }}>
@@ -214,7 +219,9 @@ export default function HomePage() {
         <ListingsTabs
           activeTab={activeTab}
           onChange={handleTabChange}
-          hasExclusiveListings={listings.some((l) => l.listingType === "EXCLUSIVE")}
+          hasExclusiveListings={listings.some(
+            (l) => l.listingType === "EXCLUSIVE",
+          )}
         />
 
         {activeTab === "nearby" && geoStatus === "loading" && (
@@ -228,7 +235,7 @@ export default function HomePage() {
         )}
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4">
             {[...Array(10)].map((_, i) => (
               <div
                 key={i}
@@ -256,7 +263,7 @@ export default function HomePage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4">
             {displayListings.map((listing, index) => (
               <ListingCard
                 key={listing._id}

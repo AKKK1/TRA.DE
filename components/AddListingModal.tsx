@@ -34,6 +34,12 @@ const C = {
   goldLight: "#fff8e6",
 };
 
+const WANTED_ITEM_MAX_LENGTH = 18;
+const SERVICE_WANTED_MAX_LENGTH = 48;
+
+const normalizeWantedItem = (value: string) =>
+  value.toUpperCase().replace(/\s+/g, " ").slice(0, WANTED_ITEM_MAX_LENGTH);
+
 // details details input-details
 const inp: React.CSSProperties = {
   background: C.bg2,
@@ -121,9 +127,9 @@ export default function AddListingModal({
         description: editingListing.description || "",
         condition: editingListing.condition || "USED",
         wantedItems: [
-          editingListing.wantedItems?.[0] || "",
-          editingListing.wantedItems?.[1] || "",
-          editingListing.wantedItems?.[2] || "",
+          normalizeWantedItem(editingListing.wantedItems?.[0] || ""),
+          normalizeWantedItem(editingListing.wantedItems?.[1] || ""),
+          normalizeWantedItem(editingListing.wantedItems?.[2] || ""),
         ],
         serviceWanted: editingListing.serviceWanted || "",
         wantedType: editingListing.wantedType || "items",
@@ -233,10 +239,14 @@ export default function AddListingModal({
           ...form,
           wantedItems:
             form.wantedType === "items"
-              ? form.wantedItems.filter((i) => i.trim() !== "")
+              ? form.wantedItems
+                  .map((i) => normalizeWantedItem(i.trim()))
+                  .filter(Boolean)
               : [],
           serviceWanted:
-            form.wantedType === "service" ? form.serviceWanted : "",
+            form.wantedType === "service"
+              ? form.serviceWanted.trim().slice(0, SERVICE_WANTED_MAX_LENGTH)
+              : "",
 
           // details details: details details
           tradePeriod: form.tradePeriod,
@@ -677,12 +687,18 @@ export default function AddListingModal({
                     {[0, 1, 2].map((i) => (
                       <input
                         key={i}
-                        placeholder={`Option ${i + 1}`}
-                        style={{ ...inp, fontSize: 12 }}
+                        placeholder={`OPTION ${i + 1}`}
+                        maxLength={WANTED_ITEM_MAX_LENGTH}
+                        style={{
+                          ...inp,
+                          fontSize: 12,
+                          textTransform: "uppercase",
+                          fontWeight: 700,
+                        }}
                         value={form.wantedItems[i] || ""}
                         onChange={(e) => {
                           const n = [...form.wantedItems];
-                          n[i] = e.target.value;
+                          n[i] = normalizeWantedItem(e.target.value);
                           setForm({ ...form, wantedItems: n });
                         }}
                       />
@@ -692,10 +708,17 @@ export default function AddListingModal({
                 {form.wantedType === "service" && (
                   <input
                     placeholder="Example: car repair, web design..."
+                    maxLength={SERVICE_WANTED_MAX_LENGTH}
                     style={{ ...inp, fontSize: 12 }}
                     value={form.serviceWanted}
                     onChange={(e) =>
-                      setForm({ ...form, serviceWanted: e.target.value })
+                      setForm({
+                        ...form,
+                        serviceWanted: e.target.value.slice(
+                          0,
+                          SERVICE_WANTED_MAX_LENGTH,
+                        ),
+                      })
                     }
                   />
                 )}

@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowDown, ArrowRight, MapPin, Plus, RefreshCw, Search } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowRight,
+  MapPin,
+  Plus,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 import { CATEGORIES } from "@/components/AuthProvider";
 
 interface HeroSectionProps {
@@ -74,7 +81,10 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
             </span>
           </h1>
 
-          <p className="mt-5 max-w-xl text-[16px] leading-7" style={{ color: C.text2 }}>
+          <p
+            className="mt-5 max-w-xl text-[16px] leading-7"
+            style={{ color: C.text2 }}
+          >
             A clean barter marketplace for Germany. List unused items, discover
             what people want nearby, and swap without cash.
           </p>
@@ -124,15 +134,21 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
           </form>
 
           <div className="mt-6 flex flex-wrap gap-2">
-            {["Berlin", "Munich", "Hamburg", "Electronics", "Home"].map((item) => (
-              <span
-                key={item}
-                className="rounded-full px-3 py-1.5 text-[12px] font-medium"
-                style={{ background: "#fff", border: `1px solid ${C.border}`, color: C.text3 }}
-              >
-                {item}
-              </span>
-            ))}
+            {["Berlin", "Munich", "Hamburg", "Electronics", "Home"].map(
+              (item) => (
+                <span
+                  key={item}
+                  className="rounded-full px-3 py-1.5 text-[12px] font-medium"
+                  style={{
+                    background: "#fff",
+                    border: `1px solid ${C.border}`,
+                    color: C.text3,
+                  }}
+                >
+                  {item}
+                </span>
+              ),
+            )}
           </div>
 
           <button
@@ -145,7 +161,11 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
               boxShadow: "0 14px 30px rgba(26,138,74,0.24)",
             }}
           >
-            Skip preview <ArrowDown size={15} style={{ animation: "gv-down 1.4s ease-in-out infinite" }} />
+            Skip preview{" "}
+            <ArrowDown
+              size={15}
+              style={{ animation: "gv-down 1.4s ease-in-out infinite" }}
+            />
           </button>
         </div>
 
@@ -159,7 +179,10 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
         >
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <p className="text-[12px] font-bold uppercase" style={{ color: C.green }}>
+              <p
+                className="text-[12px] font-bold uppercase"
+                style={{ color: C.green }}
+              >
                 Live swap preview
               </p>
               <p className="text-[12px]" style={{ color: C.text3 }}>
@@ -189,10 +212,16 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
             <div className="mt-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-[15px] font-bold" style={{ color: C.text }}>
+                  <h3
+                    className="text-[15px] font-bold"
+                    style={{ color: C.text }}
+                  >
                     MacBook Air 13
                   </h3>
-                  <p className="mt-1 flex items-center gap-1 text-[12px]" style={{ color: C.text3 }}>
+                  <p
+                    className="mt-1 flex items-center gap-1 text-[12px]"
+                    style={{ color: C.text3 }}
+                  >
                     <MapPin size={12} color="#ef4444" /> Berlin
                   </p>
                 </div>
@@ -205,21 +234,43 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-2">
-                <div className="rounded-[12px] bg-white p-3" style={{ border: `1px solid ${C.border}` }}>
-                  <p className="text-[10px] font-bold uppercase" style={{ color: C.text3 }}>
+                <div
+                  className="rounded-[12px] bg-white p-3"
+                  style={{ border: `1px solid ${C.border}` }}
+                >
+                  <p
+                    className="text-[10px] font-bold uppercase"
+                    style={{ color: C.text3 }}
+                  >
                     I have
                   </p>
-                  <p className="mt-1 text-[13px] font-semibold" style={{ color: C.text }}>
+                  <p
+                    className="mt-1 text-[13px] font-semibold"
+                    style={{ color: C.text }}
+                  >
                     Laptop
                   </p>
                 </div>
-                <div className="rounded-[12px] p-3" style={{ background: C.greenLight, border: "1px solid rgba(26,138,74,0.22)" }}>
-                  <p className="text-[10px] font-bold uppercase" style={{ color: C.green }}>
+                <div
+                  className="rounded-[12px] p-3"
+                  style={{
+                    background: C.greenLight,
+                    border: "1px solid rgba(26,138,74,0.22)",
+                  }}
+                >
+                  <p
+                    className="text-[10px] font-bold uppercase"
+                    style={{ color: C.green }}
+                  >
                     I want
                   </p>
                   <div className="mt-2 flex flex-wrap gap-1">
                     {["Bike", "Monitor"].map((item) => (
-                      <span key={item} className="rounded-full bg-white px-2 py-1 text-[11px] font-bold" style={{ color: C.greenDark }}>
+                      <span
+                        key={item}
+                        className="rounded-full bg-white px-2 py-1 text-[11px] font-bold"
+                        style={{ color: C.greenDark }}
+                      >
                         {item}
                       </span>
                     ))}

@@ -36,6 +36,7 @@ import {
   Copy,
   Check,
   AtSign,
+  LockKeyhole,
   InstagramIcon,
   MessageCircleMore,
   Replace,
@@ -88,6 +89,8 @@ function ProfilePageContent() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [settingsError, setSettingsError] = useState("");
   const [settingsSuccess, setSettingsSuccess] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -259,6 +262,13 @@ function ProfilePageContent() {
     padding: "10px 16px",
     borderRadius: 10,
     fontSize: 14,
+  } as React.CSSProperties;
+
+  const compactInp = {
+    ...inp,
+    padding: "8px 12px",
+    borderRadius: 9,
+    fontSize: 12,
   } as React.CSSProperties;
 
   const navBtnBase =
@@ -1330,21 +1340,21 @@ function ProfilePageContent() {
 
                   {/* personal */}
                   <section
-                    className="rounded-xl p-6"
+                    className="rounded-xl p-4"
                     style={{
                       background: C.bg2,
                       border: `1px solid ${C.border}`,
                     }}
                   >
                     <h4
-                      className="text-[10px] font-bold uppercase tracking-widest mb-6 flex items-center gap-2"
+                      className="text-[10px] font-bold uppercase tracking-widest mb-4 flex items-center gap-2"
                       style={{ color: C.text3 }}
                     >
                       <UserIcon size={13} style={{ color: C.green }} /> Personal
                       information
                     </h4>
                     <form
-                      className="space-y-4 max-w-md"
+                      className="space-y-3 max-w-sm"
                       onSubmit={async (e) => {
                         e.preventDefault();
                         setSettingsError("");
@@ -1385,7 +1395,7 @@ function ProfilePageContent() {
                             defaultValue={user.username || ""}
                             type="text"
                             placeholder="username"
-                            style={{ ...inp, paddingLeft: 32 }}
+                            style={{ ...compactInp, paddingLeft: 32 }}
                           />
                         </div>
                         <p
@@ -1440,7 +1450,7 @@ function ProfilePageContent() {
                             defaultValue={f.defaultValue}
                             type="text"
                             placeholder={f.placeholder}
-                            style={inp}
+                            style={compactInp}
                           />
                         </div>
                       ))}
@@ -1463,7 +1473,7 @@ function ProfilePageContent() {
                       )}
 
                       <button
-                        className="w-full text-white py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                        className="w-full text-white py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all"
                         style={{
                           background: C.green,
                           cursor: "pointer",
@@ -1471,6 +1481,143 @@ function ProfilePageContent() {
                         }}
                       >
                         Save changes
+                      </button>
+                    </form>
+                  </section>
+
+                  <section
+                    className="rounded-xl p-4"
+                    style={{
+                      background: C.bg2,
+                      border: `1px solid ${C.border}`,
+                    }}
+                  >
+                    <h4
+                      className="text-[10px] font-bold uppercase tracking-widest mb-4 flex items-center gap-2"
+                      style={{ color: C.text3 }}
+                    >
+                      <LockKeyhole size={13} style={{ color: C.green }} /> Password
+                    </h4>
+                    <form
+                      className="space-y-3 max-w-sm"
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        setPasswordError("");
+                        setPasswordSuccess("");
+                        const form = e.currentTarget;
+                        const formData = new FormData(form);
+                        const currentPassword = String(
+                          formData.get("currentPassword") || "",
+                        );
+                        const newPassword = String(
+                          formData.get("newPassword") || "",
+                        );
+                        const confirmPassword = String(
+                          formData.get("confirmPassword") || "",
+                        );
+
+                        if (newPassword.length < 6) {
+                          setPasswordError("Password must be at least 6 characters");
+                          return;
+                        }
+                        if (newPassword !== confirmPassword) {
+                          setPasswordError("Passwords do not match");
+                          return;
+                        }
+
+                        const res = await fetch("/api/profile/password", {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            currentPassword,
+                            newPassword,
+                          }),
+                        });
+
+                        if (res.ok) {
+                          setPasswordSuccess("Password updated!");
+                          form.reset();
+                          setTimeout(() => setPasswordSuccess(""), 3000);
+                        } else {
+                          const err = await res.json();
+                          setPasswordError(err.error || "Could not update password");
+                        }
+                      }}
+                    >
+                      <div className="space-y-1.5">
+                        <label
+                          className="text-[10px] font-bold uppercase tracking-widest ml-1"
+                          style={{ color: C.text3 }}
+                        >
+                          Current password
+                        </label>
+                        <input
+                          name="currentPassword"
+                          type="password"
+                          placeholder="Leave empty if you signed up with Google"
+                          style={compactInp}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <label
+                            className="text-[10px] font-bold uppercase tracking-widest ml-1"
+                            style={{ color: C.text3 }}
+                          >
+                            New password
+                          </label>
+                          <input
+                            name="newPassword"
+                            type="password"
+                            minLength={6}
+                            placeholder="At least 6 characters"
+                            style={compactInp}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label
+                            className="text-[10px] font-bold uppercase tracking-widest ml-1"
+                            style={{ color: C.text3 }}
+                          >
+                            Confirm
+                          </label>
+                          <input
+                            name="confirmPassword"
+                            type="password"
+                            minLength={6}
+                            placeholder="Repeat password"
+                            style={compactInp}
+                          />
+                        </div>
+                      </div>
+
+                      {passwordError && (
+                        <p
+                          className="text-xs font-bold"
+                          style={{ color: "#ef4444" }}
+                        >
+                          {passwordError}
+                        </p>
+                      )}
+                      {passwordSuccess && (
+                        <p
+                          className="text-xs font-bold"
+                          style={{ color: C.green }}
+                        >
+                          {passwordSuccess}
+                        </p>
+                      )}
+
+                      <button
+                        className="w-full text-white py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all"
+                        style={{
+                          background: C.text,
+                          cursor: "pointer",
+                          fontFamily: "'Space Grotesk', sans-serif",
+                        }}
+                      >
+                        Update password
                       </button>
                     </form>
                   </section>

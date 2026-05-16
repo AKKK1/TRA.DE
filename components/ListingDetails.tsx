@@ -12,6 +12,7 @@ import {
   ChevronRight,
   RefreshCw,
   User,
+  Gift,
 } from "lucide-react";
 import Toast from "./Toast";
 import { cn, useAuth } from "./AuthProvider";
@@ -165,76 +166,81 @@ export default function ListingDetails({
     wantsService && listing.serviceWanted
       ? [listing.serviceWanted]
       : Array.isArray(listing.wantedItems)
-        ? listing.wantedItems.filter(Boolean)
+        ? listing.wantedItems
+            .map((item: unknown) => String(item || "").trim().toUpperCase())
+            .filter(Boolean)
         : [];
   const wantsTheme = isExclusive
     ? {
         panel:
-          "linear-gradient(135deg, #4c1d95 0%, #7c3aed 52%, #06b6d4 100%)",
-        border: "1px solid rgba(124,58,237,0.42)",
-        label: "#ffffff",
-        chipBg: "rgba(255,255,255,0.18)",
-        chipBorder: "1px solid rgba(255,255,255,0.28)",
-        chipText: "#ffffff",
+          "linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(245,243,255,0.98) 48%, rgba(236,254,255,0.94) 100%)",
+        border: "1px solid rgba(124,58,237,0.24)",
+        label: "#5b21b6",
+        chipBg: "#ffffff",
+        chipBorder: "1px solid rgba(124,58,237,0.16)",
+        chipText: "#312e81",
       }
     : isVip
       ? {
           panel:
-            "linear-gradient(135deg, #7c4a03 0%, #c8820a 50%, #f3d37a 100%)",
-          border: "1px solid rgba(200,130,10,0.42)",
-          label: "#fff7d6",
-          chipBg: "rgba(255,255,255,0.2)",
-          chipBorder: "1px solid rgba(255,255,255,0.3)",
-          chipText: "#fffdf4",
+            "linear-gradient(135deg, rgba(255,253,244,0.98) 0%, rgba(255,248,224,0.94) 100%)",
+          border: "1px solid rgba(200,130,10,0.24)",
+          label: "#8a5a08",
+          chipBg: "#ffffff",
+          chipBorder: "1px solid rgba(200,130,10,0.14)",
+          chipText: "#8a5a08",
         }
       : isSilver
         ? {
             panel:
-              "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 52%, #f8fafc 100%)",
-            border: "1px solid rgba(100,116,139,0.3)",
+              "linear-gradient(135deg, #ffffff 0%, #f5f8fb 100%)",
+            border: "1px solid rgba(100,116,139,0.22)",
             label: "#334155",
-            chipBg: "rgba(255,255,255,0.84)",
-            chipBorder: "1px solid rgba(100,116,139,0.28)",
+            chipBg: "#ffffff",
+            chipBorder: "1px solid rgba(100,116,139,0.16)",
             chipText: "#334155",
           }
         : wantsService
           ? {
-              panel: "#ffffff",
-              border: "1px solid rgba(100,116,139,0.18)",
+              panel: "linear-gradient(135deg, #f7fcf9 0%, #e9f8ef 100%)",
+              border: "1px solid rgba(26,138,74,0.18)",
               label: "#0f766e",
               chipBg: "#ffffff",
-              chipBorder: "1px solid rgba(15,118,110,0.2)",
+              chipBorder: "1px solid rgba(15,118,110,0.12)",
               chipText: "#0f766e",
             }
           : {
-              panel: "#ffffff",
-              border: "1px solid rgba(100,116,139,0.18)",
-              label: "#475569",
+              panel: "linear-gradient(135deg, #f7fcf9 0%, #e9f8ef 100%)",
+              border: "1px solid rgba(26,138,74,0.18)",
+              label: "#0f766e",
               chipBg: "#ffffff",
-              chipBorder: "1px solid rgba(100,116,139,0.18)",
-              chipText: "#334155",
+              chipBorder: "1px solid rgba(15,118,110,0.12)",
+              chipText: "#0f766e",
             };
   const openOfferTheme = {
     panel: "#ffffff",
     border: "1px solid rgba(100,116,139,0.18)",
-    chipText: "#4f46e5",
+    chipBg:
+      "linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(239,246,255,0.96) 100%)",
+    chipBorder: "1px solid rgba(37,99,235,0.28)",
+    chipText: "#1d4ed8",
   };
   const serviceBadgeTheme = {
-    background: isExclusive ? "rgba(255,255,255,0.2)" : isVip || isSilver ? "rgba(255,255,255,0.78)" : "rgba(15,118,110,0.12)",
-    color: isExclusive ? "#ffffff" : "#0f766e",
+    background: isExclusive ? "rgba(124,58,237,0.08)" : isVip || isSilver ? "rgba(255,255,255,0.78)" : "rgba(15,118,110,0.12)",
+    color: isExclusive ? "#5b21b6" : "#0f766e",
     border: isExclusive
-      ? "1px solid rgba(255,255,255,0.28)"
+      ? "1px solid rgba(124,58,237,0.16)"
       : isVip || isSilver
       ? "1px solid rgba(255,255,255,0.34)"
       : "1px solid rgba(15,118,110,0.22)",
   };
   const detailSurface = isVip
-    ? "linear-gradient(145deg, #fffdf4 0%, #fff8e6 46%, #ffffff 100%)"
+    ? "#fffdf7"
     : isExclusive
-      ? "linear-gradient(145deg, #ffffff 0%, #f5f3ff 46%, #ecfeff 100%)"
+      ? "#ffffff"
       : isSilver
-      ? "linear-gradient(145deg, #ffffff 0%, #f8fbff 42%, #edf4fb 100%)"
-      : C.bg;
+      ? "#fbfcfe"
+      : "#f8fbf8";
 
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
@@ -248,7 +254,10 @@ export default function ListingDetails({
 
   return (
     <div
-      style={{ color: C.text, fontFamily: "'Space Grotesk', sans-serif" }}
+      style={{
+        color: C.text,
+        fontFamily: "'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif",
+      }}
       className="pb-20"
     >
       <div
@@ -264,7 +273,7 @@ export default function ListingDetails({
                 ? "rgba(100,116,139,0.32)"
                 : C.border
           }`,
-          boxShadow: "0 20px 50px rgba(17,24,39,0.07)",
+          boxShadow: "0 18px 42px rgba(15,23,42,0.06)",
         }}
       >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -272,7 +281,10 @@ export default function ListingDetails({
         <div className="space-y-4">
           <div
             className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl group"
-            style={{ background: C.bg2, border: `1px solid ${C.border}` }}
+            style={{
+              background: C.bg2,
+              border: "1px solid rgba(148,163,184,0.24)",
+            }}
           >
             {isExchanged && (
               <div
@@ -422,8 +434,12 @@ export default function ListingDetails({
               </span>
             </div>
             <h1
-              className="text-3xl font-black tracking-tight mb-3"
-              style={{ color: C.text, letterSpacing: "-0.5px" }}
+              className="text-2xl md:text-3xl font-black tracking-tight mb-3"
+              style={{
+                color: C.text,
+                letterSpacing: "0",
+                fontFamily: "'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif",
+              }}
             >
               {listing.title}
             </h1>
@@ -434,6 +450,50 @@ export default function ListingDetails({
           </div>
 
           {/* ── details details ── */}
+          {isExclusive && (
+            <div
+              className="relative overflow-hidden rounded-2xl p-4"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(245,243,255,0.96) 52%, rgba(236,254,255,0.92) 100%)",
+                border: "1px solid rgba(124,58,237,0.24)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)",
+              }}
+            >
+              <div
+                className="absolute -left-6 top-1/2 h-12 w-12 -translate-y-1/2 rounded-full"
+                style={{ background: detailSurface }}
+              />
+              <div
+                className="absolute -right-6 top-1/2 h-12 w-12 -translate-y-1/2 rounded-full"
+                style={{ background: detailSurface }}
+              />
+              <div className="relative flex items-center gap-3">
+                <div
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                  style={{
+                    background: "rgba(124,58,237,0.1)",
+                    color: "#5b21b6",
+                    border: "1px solid rgba(124,58,237,0.16)",
+                  }}
+                >
+                  <Gift size={18} />
+                </div>
+                <div>
+                  <p
+                    className="text-[10px] font-black uppercase tracking-[0.16em]"
+                    style={{ color: "#5b21b6" }}
+                  >
+                    Exclusive draw entry
+                  </p>
+                  <p className="mt-1 text-xs font-semibold" style={{ color: C.text2 }}>
+                    This listing is highlighted as a limited partner opportunity.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div
             className="hidden"
             style={{ background: C.bg2, border: `1px solid ${C.border}` }}
@@ -470,7 +530,7 @@ export default function ListingDetails({
                 wantedItems.length > 0 ? wantsTheme.panel : openOfferTheme.panel,
               border:
                 wantedItems.length > 0 ? wantsTheme.border : openOfferTheme.border,
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.18)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.72)",
             }}
           >
             <h3
@@ -479,17 +539,17 @@ export default function ListingDetails({
                 color:
                   wantedItems.length > 0 ? wantsTheme.label : openOfferTheme.chipText,
                 textShadow:
-                  wantedItems.length > 0
+                  wantedItems.length > 0 && isExclusive
                     ? "0 1px 8px rgba(15,23,42,0.28)"
                     : "none",
               }}
             >
-              <RefreshCw size={13} /> Wanted
+              <RefreshCw size={13} /> WANTS
             </h3>
             <div className="flex flex-wrap gap-2">
               {wantsService && listing.serviceWanted ? (
                 <span
-                  className="px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2"
+                  className="px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold flex items-center gap-2"
                   style={{
                     background: wantsTheme.chipBg,
                     color: wantsTheme.chipText,
@@ -508,7 +568,7 @@ export default function ListingDetails({
                 wantedItems.map((item: string, idx: number) => (
                   <span
                     key={idx}
-                    className="px-3 py-1.5 rounded-lg text-sm font-bold"
+                    className="px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold uppercase"
                     style={{
                       background: wantsTheme.chipBg,
                       color: wantsTheme.chipText,
@@ -520,12 +580,28 @@ export default function ListingDetails({
                 ))
               ) : (
                 <span
-                  className="rounded-full bg-white px-3 py-1.5 text-sm font-bold"
+                  className="rounded-full bg-white px-3 py-1.5 text-xs md:text-sm font-bold"
                   style={{
-                    color: isExclusive ? "#ffffff" : openOfferTheme.chipText,
-                    border: "1px solid rgba(99,102,241,0.24)",
+                    background: isExclusive
+                      ? "rgba(255,255,255,0.18)"
+                      : openOfferTheme.chipBg,
+                    color: isExclusive ? "#5b21b6" : openOfferTheme.chipText,
+                    border: isExclusive
+                      ? "1px solid rgba(255,255,255,0.28)"
+                      : openOfferTheme.chipBorder,
+                    boxShadow:
+                      "0 4px 12px rgba(37,99,235,0.08), inset 0 1px 0 rgba(255,255,255,0.78)",
                   }}
                 >
+                  <span
+                    className="mr-1 inline-block h-2 w-2 rounded-full align-middle"
+                    style={{
+                      background: isExclusive ? "#5b21b6" : openOfferTheme.chipText,
+                      boxShadow: isExclusive
+                        ? "0 0 0 3px rgba(255,255,255,0.16)"
+                        : "0 0 0 3px rgba(37,99,235,0.1)",
+                    }}
+                  />
                   Open to offers
                 </span>
               )}

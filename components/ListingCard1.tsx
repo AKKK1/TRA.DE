@@ -165,7 +165,7 @@ function getWantedChips(listing: any) {
 
   if (Array.isArray(listing.wantedItems)) {
     return listing.wantedItems
-      .map((item: unknown) => String(item || "").trim().toUpperCase())
+      .map((item: unknown) => String(item || "").trim())
       .filter(Boolean);
   }
 
@@ -236,19 +236,19 @@ export default function ListingCard({
   const cardBorder = isExclusive
     ? "2px solid #111111"
     : type === "VIP"
-      ? "1.5px solid rgba(200,130,10,0.5)"
+      ? "2px solid rgba(26,138,74,0.55)"
       : isSilver
-        ? "1.5px solid rgba(100,116,139,0.26)"
-        : "1px solid rgba(148,163,184,0.24)";
+        ? "2px solid rgba(100,116,139,0.34)"
+        : "1.5px solid rgba(15,23,42,0.14)";
   const cardHoverShadow = isExclusive
     ? "0 16px 34px rgba(17,17,17,0.16)"
     : type === "VIP"
-      ? "0 14px 30px rgba(200,130,10,0.12)"
+      ? "0 16px 34px rgba(26,138,74,0.16)"
       : isSilver
-        ? "0 14px 30px rgba(15,23,42,0.09)"
-        : "0 12px 26px rgba(15,23,42,0.07)";
+        ? "0 16px 34px rgba(15,23,42,0.12)"
+        : "0 12px 28px rgba(15,23,42,0.1)";
   const wantedChips = getWantedChips(listing);
-  const visibleWantedChips = wantedChips.slice(0, 3); //
+  const visibleWantedChips = wantedChips.slice(0, 2);
   const hiddenWantedCount = Math.max(
     0,
     wantedChips.length - visibleWantedChips.length,
@@ -318,10 +318,9 @@ export default function ListingCard({
   const openOfferTheme = {
     panel: "#ffffff",
     border: "1px solid rgba(100,116,139,0.18)",
-    chipBg:
-      "linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(239,246,255,0.96) 100%)",
-    chipBorder: "1px solid rgba(37,99,235,0.28)",
-    chipText: "#1d4ed8",
+    chipBg: "#ffffff",
+    chipBorder: "1px solid rgba(99,102,241,0.34)",
+    chipText: "#4f46e5",
   };
   const useTierTradePanel = wantedChips.length > 0 || isExclusive || isSilver;
   const tradePanelLabelColor =
@@ -346,81 +345,81 @@ export default function ListingCard({
     ? isVip
       ? {
           panel:
-            "linear-gradient(135deg, rgba(255,253,244,0.98) 0%, rgba(255,248,224,0.94) 100%)",
-          border: "1px solid rgba(200,130,10,0.24)",
+            "linear-gradient(135deg, rgba(255,253,244,0.96) 0%, rgba(255,247,214,0.9) 54%, rgba(255,255,255,0.92) 100%)",
+          border: "1px solid rgba(200,130,10,0.32)",
           accent: "#8a5a08",
-          chipBg: "#ffffff",
-          chipBorder: "1px solid rgba(200,130,10,0.14)",
-          badgeBg: "rgba(200,130,10,0.08)",
+          chipBg: "rgba(255,255,255,0.72)",
+          chipBorder: "1px solid rgba(200,130,10,0.18)",
+          badgeBg: "rgba(200,130,10,0.1)",
           glow: "rgba(200,130,10,0.04)",
         }
       : isSilver
         ? {
-            panel: "linear-gradient(135deg, #ffffff 0%, #f5f8fb 100%)",
-            border: "1px solid rgba(100,116,139,0.22)",
+            panel: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+            border: "1.5px solid rgba(100,116,139,0.34)",
             accent: "#0f766e",
             chipBg: "#ffffff",
-            chipBorder: "1px solid rgba(15,118,110,0.14)",
-            badgeBg: "rgba(15,118,110,0.06)",
-            glow: "rgba(100,116,139,0.04)",
+            chipBorder: "1px solid rgba(15,118,110,0.2)",
+            badgeBg: "rgba(15,118,110,0.08)",
+            glow: "rgba(100,116,139,0.08)",
           }
         : {
-            panel: "linear-gradient(135deg, #f7fcf9 0%, #e9f8ef 100%)",
-            border: "1px solid rgba(26,138,74,0.18)",
+            panel: "#ffffff",
+            border: "1.5px solid rgba(26,138,74,0.22)",
             accent: "#0f766e",
             chipBg: "#ffffff",
-            chipBorder: "1px solid rgba(15,118,110,0.12)",
-            badgeBg: "rgba(15,118,110,0.07)",
-            glow: "rgba(26,138,74,0.03)",
+            chipBorder: "1px solid rgba(15,118,110,0.18)",
+            badgeBg: "rgba(15,118,110,0.08)",
+            glow: "rgba(26,138,74,0.05)",
           }
     : visibleWantedChips.length > 0
       ? isVip
         ? {
             panel:
-              "linear-gradient(135deg, rgba(255,253,244,0.98) 0%, rgba(255,248,224,0.94) 100%)",
-            border: "1px solid rgba(200,130,10,0.24)",
+              "linear-gradient(135deg, rgba(255,253,244,0.96) 0%, rgba(255,247,214,0.9) 54%, rgba(255,255,255,0.92) 100%)",
+            border: "1px solid rgba(200,130,10,0.32)",
             accent: "#8a5a08",
-            chipBg: "#ffffff",
-            chipBorder: "1px solid rgba(200,130,10,0.14)",
-            badgeBg: "rgba(200,130,10,0.08)",
+            chipBg: "rgba(255,255,255,0.72)",
+            chipBorder: "1px solid rgba(200,130,10,0.18)",
+            badgeBg: "rgba(200,130,10,0.1)",
             glow: "rgba(200,130,10,0.04)",
           }
         : isSilver
           ? {
               panel:
-                "linear-gradient(135deg, #ffffff 0%, #f5f8fb 100%)",
-              border: "1px solid rgba(100,116,139,0.22)",
+                "linear-gradient(135deg, #ffffff 0%, #f8fafc 52%, #eef2f7 100%)",
+              border: "1.5px solid rgba(100,116,139,0.32)",
               accent: "#334155",
               chipBg: "#ffffff",
-              chipBorder: "1px solid rgba(100,116,139,0.16)",
+              chipBorder: "1px solid rgba(100,116,139,0.2)",
               badgeBg: "rgba(100,116,139,0.08)",
-              glow: "rgba(100,116,139,0.04)",
+              glow: "rgba(100,116,139,0.08)",
             }
           : {
-              panel: "linear-gradient(135deg, #f7fcf9 0%, #e9f8ef 100%)",
-              border: "1px solid rgba(26,138,74,0.18)",
-              accent: "#0f766e",
+              panel: "#ffffff",
+              border: "1.5px solid rgba(26,138,74,0.22)",
+              accent: C.green,
               chipBg: "#ffffff",
-              chipBorder: "1px solid rgba(15,118,110,0.12)",
-              badgeBg: "rgba(26,138,74,0.07)",
-              glow: "rgba(26,138,74,0.03)",
+              chipBorder: "1px solid rgba(26,138,74,0.18)",
+              badgeBg: "rgba(26,138,74,0.08)",
+              glow: "rgba(26,138,74,0.05)",
             }
       : {
           panel: isVip
-            ? "linear-gradient(135deg, rgba(255,253,244,0.98) 0%, rgba(255,248,224,0.94) 100%)"
+            ? "linear-gradient(135deg, rgba(255,253,244,0.96) 0%, rgba(255,247,214,0.9) 54%, rgba(255,255,255,0.92) 100%)"
             : isSilver
-              ? "linear-gradient(135deg, #ffffff 0%, #f5f8fb 100%)"
-              : "linear-gradient(135deg, #ffffff 0%, #f4faf7 100%)",
+              ? "linear-gradient(135deg, #ffffff 0%, #f8fafc 52%, #eef2f7 100%)"
+              : "#ffffff",
           border: isVip
-            ? "1px solid rgba(200,130,10,0.24)"
+            ? "1px solid rgba(200,130,10,0.32)"
             : isSilver
-              ? "1px solid rgba(100,116,139,0.22)"
-              : "1px dashed rgba(26,138,74,0.22)",
-          accent: isVip ? "#8a5a08" : isSilver ? "#334155" : "#0f766e",
-          chipBg: "#ffffff",
+              ? "1.5px solid rgba(100,116,139,0.3)"
+              : "1.5px dashed rgba(100,116,139,0.28)",
+          accent: isVip ? "#8a5a08" : isSilver ? "#334155" : "#475569",
+          chipBg: isVip ? "rgba(255,255,255,0.72)" : "#ffffff",
           chipBorder: isVip
-            ? "1px solid rgba(200,130,10,0.14)"
-            : "1px solid rgba(15,118,110,0.12)",
+            ? "1px solid rgba(200,130,10,0.18)"
+            : "1px solid rgba(100,116,139,0.2)",
           badgeBg: "rgba(100,116,139,0.08)",
           glow: isVip
             ? "rgba(200,130,10,0.04)"
@@ -455,12 +454,12 @@ export default function ListingCard({
         : "1px solid rgba(15,118,110,0.22)",
   };
   const cardSurface = isSilver
-    ? "#fbfcfe"
+    ? "#ffffff"
     : isExclusive
       ? "#ffffff"
       : isVip
-        ? "#fffdf7"
-        : "#f8fbf8";
+        ? "#ffffff"
+        : "#ffffff";
   const infoSurface = isSilver
     ? "rgb(255, 255, 255)"
     : isExclusive
@@ -478,14 +477,13 @@ export default function ListingCard({
       >
         <div
           className={cn(
-            "group relative w-full h-full flex flex-col gap-2.5 rounded-[14px] p-3 transition-all duration-200",
+            "group relative w-full h-full flex flex-col overflow-hidden rounded-[14px] transition-all duration-200",
             isExclusive && !isExchanged && "exclusive-card-glow",
           )}
           style={{
             background: cardSurface,
             border: isExchanged ? "1px solid #fca5a5" : cardBorder,
             opacity: isExchanged ? 0.9 : 1,
-            fontFamily: "'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif",
           }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.transform =
@@ -495,9 +493,9 @@ export default function ListingCard({
               (e.currentTarget as HTMLElement).style.borderColor = isExclusive
                 ? "#111111"
                 : type === "VIP"
-                  ? C.gold
+                  ? C.green
                   : isSilver
-                    ? "#64748b"
+                    ? "#111111"
                     : C.green;
           }}
           onMouseLeave={(e) => {
@@ -506,7 +504,7 @@ export default function ListingCard({
             (e.currentTarget as HTMLElement).style.borderColor = isExclusive
               ? "#111111"
               : type === "VIP"
-                ? C.gold
+                ? C.green
                 : isSilver
                   ? "#64748b"
                   : isExchanged
@@ -539,7 +537,7 @@ export default function ListingCard({
 
           {/* details */}
           <div
-            className="relative aspect-[4/3] w-full overflow-hidden shrink-0 rounded-[10px] group/carousel"
+            className="relative aspect-[4/3] w-full overflow-hidden shrink-0 group/carousel"
             style={{ background: "#f0f4f0" }}
           >
             <img
@@ -618,7 +616,7 @@ export default function ListingCard({
                 style={{
                   background: "#111111",
                   color: "#ffffff",
-                  border: "1px solid rgba(200,130,10,0.58)",
+                  border: "1px solid rgba(26,138,74,0.55)",
                   boxShadow: "0 6px 14px rgba(17,17,17,0.16)",
                 }}
               >
@@ -679,15 +677,15 @@ export default function ListingCard({
 
           {/* details */}
           <div
-            className="flex flex-col flex-1 gap-2"
-            style={{ background: "transparent" }}
+            className="p-3 flex flex-col flex-1 gap-2"
+            style={{ background: infoSurface }}
           >
             <h3
-              className="font-extrabold text-[13px] leading-[1.18] line-clamp-2"
+              className="font-bold text-[14px] leading-[1.18] line-clamp-2"
               style={{
                 color: "#111111",
                 fontFamily:
-                  "'Manrope', 'Inter', 'Segoe UI', Arial, sans-serif",
+                  "'Segoe UI Variable Text', 'Segoe UI', Arial, sans-serif",
                 letterSpacing: "0",
               }}
             >
@@ -698,13 +696,13 @@ export default function ListingCard({
             {useReferenceTradeLayout ? (
               <div>
                 <div
-                  className="min-h-[68px] rounded-[10px] px-3 py-2.5"
+                  className="min-h-[72px] rounded-[10px] px-3 py-2.5"
                   style={{
                     background: tradeIntentTheme.panel,
                     border: tradeIntentTheme.border,
                     boxShadow: isVip
-                      ? `inset 2px 0 0 ${priorityAccent}, inset 0 1px 0 rgba(255,255,255,0.82)`
-                      : `inset 2px 0 0 ${priorityAccent}, inset 0 1px 0 rgba(255,255,255,0.72), 0 6px 14px ${tradeIntentTheme.glow}`,
+                      ? `inset 2px 0 0 ${priorityAccent}, inset 0 1px 0 rgba(255,255,255,0.72)`
+                      : `inset 3px 0 0 ${priorityAccent}, inset 0 1px 0 rgba(255,255,255,0.22), 0 8px 18px ${tradeIntentTheme.glow}`,
                   }}
                 >
                   {hasSpecificWant && (
@@ -736,7 +734,7 @@ export default function ListingCard({
                         (item: string, chipIndex: number) => (
                           <span
                             key={`${item}-${chipIndex}`}
-                            className="max-w-full truncate rounded-full px-2.5 py-1 text-[10px] font-bold uppercase"
+                            className="max-w-full truncate rounded-full px-2.5 py-1 text-[11px] font-bold"
                             style={{
                               background: tradeIntentTheme.chipBg,
                               border: tradeIntentTheme.chipBorder,
@@ -748,9 +746,9 @@ export default function ListingCard({
                           </span>
                         ),
                       )}
-                      {/* {hiddenWantedCount > 0 && (
+                      {hiddenWantedCount > 0 && (
                         <span
-                          className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase"
+                          className="rounded-full px-2.5 py-1 text-[11px] font-bold"
                           style={{
                             background: tradeIntentTheme.chipBg,
                             border: tradeIntentTheme.chipBorder,
@@ -759,19 +757,16 @@ export default function ListingCard({
                         >
                           +{hiddenWantedCount}
                         </span>
-                      )} */}
+                      )}
                     </div>
                   ) : (
                     <div className="flex min-h-[28px] items-center">
                       <span
-                        className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold"
                         style={{
                           background: tradeIntentTheme.chipBg,
                           border: tradeIntentTheme.chipBorder,
                           color: tradeIntentTheme.accent,
-                          boxShadow: isVip
-                            ? "inset 0 1px 0 rgba(255,255,255,0.78)"
-                            : "0 4px 12px rgba(37,99,235,0.08), inset 0 1px 0 rgba(255,255,255,0.78)",
                         }}
                       >
                         <span
@@ -828,7 +823,7 @@ export default function ListingCard({
                       (item: string, chipIndex: number) => (
                         <span
                           key={`${item}-${chipIndex}`}
-                          className="max-w-full truncate rounded-full px-2.5 py-1 text-[10px] font-bold uppercase"
+                          className="max-w-full truncate rounded-full px-2.5 py-1 text-[11px] font-bold"
                           style={{
                             background: wantsTheme.chipBg,
                             border: wantsTheme.chipBorder,
@@ -842,7 +837,7 @@ export default function ListingCard({
                     )}
                     {hiddenWantedCount > 0 && (
                       <span
-                          className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase"
+                        className="rounded-full px-2.5 py-1 text-[11px] font-bold"
                         style={{
                           background: wantsTheme.chipBg,
                           border: wantsTheme.chipBorder,
@@ -855,25 +850,18 @@ export default function ListingCard({
                   </div>
                 ) : (
                   <span
-                    className="inline-flex min-h-[28px] items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold"
-                    style={{
-                      ...openOfferChipStyle,
-                      boxShadow:
-                        "0 4px 12px rgba(37,99,235,0.08), inset 0 1px 0 rgba(255,255,255,0.78)",
-                    }}
+                    className="inline-flex min-h-[28px] items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold"
+                    style={openOfferChipStyle}
                   >
                     <span
-                      className="h-2 w-2 rounded-full"
+                      className="h-1.5 w-1.5 rounded-full"
                       style={{
                         background: isExclusive
                           ? "#ffffff"
                           : openOfferTheme.chipText,
-                        boxShadow: isExclusive
-                          ? "0 0 0 3px rgba(255,255,255,0.16)"
-                          : "0 0 0 3px rgba(37,99,235,0.1)",
                       }}
                     />
-                    Open to offers
+                    OPEN TO OFFER
                   </span>
                 )}
               </div>
@@ -883,7 +871,7 @@ export default function ListingCard({
             {/* footer */}
             <div
               className="flex items-center justify-between pt-1.5 mt-auto"
-              style={{ borderTop: "1px solid rgba(100,116,139,0.12)" }}
+              style={{ borderTop: "1px solid rgba(100,116,139,0.22)" }}
             >
               {/* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */}
               {/* 🔁 details details details: details details TradePeriodBadge */}
@@ -993,7 +981,12 @@ export function ListingsTabs({
           }}
         >
           <span
-            className="h-2 w-2 rounded-full"
+            className={cn(
+              "h-2 w-2 rounded-full",
+              tab.id === "exclusive" &&
+                hasExclusiveListings &&
+                "exclusive-tab-dot",
+            )}
             style={{ background: activeTab === tab.id ? tab.accent : C.border }}
           />
           {tab.label}

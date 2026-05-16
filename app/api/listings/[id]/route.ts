@@ -5,6 +5,30 @@ import { Listing, User } from '@/lib/models';
 import { getUserFromRequest } from '@/lib/auth';
 import { CONFIG } from '@/lib/config';
 
+const WANTED_ITEM_MAX_LENGTH = 18;
+const SERVICE_WANTED_MAX_LENGTH = 48;
+
+function normalizeWantedItems(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .slice(0, 3)
+    .map((item) =>
+      String(item || '')
+        .trim()
+        .replace(/\s+/g, ' ')
+        .toUpperCase()
+        .slice(0, WANTED_ITEM_MAX_LENGTH)
+    )
+    .filter(Boolean);
+}
+
+function normalizeServiceWanted(value: unknown) {
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, SERVICE_WANTED_MAX_LENGTH);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // ✏️ PATCH: details details
 // ─────────────────────────────────────────────────────────────────────────────
@@ -76,6 +100,16 @@ export async function PATCH(
   const { tradePeriod: _, tradeDuration: __, tradeUnit: ___, ...cleanBody } = body;
   
   const updateData: any = { ...cleanBody };
+
+  if (body.wantedType !== undefined || body.wantedItems !== undefined) {
+    updateData.wantedItems =
+      body.wantedType === 'items' ? normalizeWantedItems(body.wantedItems) : [];
+  }
+
+  if (body.wantedType !== undefined || body.serviceWanted !== undefined) {
+    updateData.serviceWanted =
+      body.wantedType === 'service' ? normalizeServiceWanted(body.serviceWanted) : '';
+  }
   
   // 2. details tradePeriod details details, details
   if (body.tradePeriod !== undefined) {

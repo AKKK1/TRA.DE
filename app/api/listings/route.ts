@@ -5,6 +5,30 @@ import { Listing, User } from '@/lib/models';
 import { getUserFromRequest } from '@/lib/auth';
 import { CONFIG } from '@/lib/config';
 
+const WANTED_ITEM_MAX_LENGTH = 18;
+const SERVICE_WANTED_MAX_LENGTH = 48;
+
+function normalizeWantedItems(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .slice(0, 3)
+    .map((item) =>
+      String(item || '')
+        .trim()
+        .replace(/\s+/g, ' ')
+        .toUpperCase()
+        .slice(0, WANTED_ITEM_MAX_LENGTH)
+    )
+    .filter(Boolean);
+}
+
+function normalizeServiceWanted(value: unknown) {
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, SERVICE_WANTED_MAX_LENGTH);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 🔍 GET: details details
 // ─────────────────────────────────────────────────────────────────────────────
@@ -137,6 +161,8 @@ export async function POST(request: Request) {
 
   const listing = await Listing.create({
     ...cleanBody,
+    wantedItems: body.wantedType === 'items' ? normalizeWantedItems(body.wantedItems) : [],
+    serviceWanted: body.wantedType === 'service' ? normalizeServiceWanted(body.serviceWanted) : '',
     owner: user._id,
     isVIP: listingType === 'VIP' || listingType === 'EXCLUSIVE',
     tradePeriod,
